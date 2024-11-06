@@ -75,11 +75,14 @@ export default function App() {
 
   useEffect(
     function () {
+      //AbortController 接口表示一个控制器对象，允许你根据需要中止一个或多个 Web 请求。
+      const controller = new AbortController();
       async function fetchMovies() {
         try {
           setIsLoading(true);
           const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+            { signal: controller.signal }
           );
 
           if (!res.ok)
@@ -101,6 +104,10 @@ export default function App() {
         return;
       }
       fetchMovies();
+
+      return function () {
+        controller.abort();
+      };
     },
     [query]
   );
@@ -200,6 +207,7 @@ function MovieDetail({
           );
           const data = await res.json();
           setMovie(data);
+          console.log(data);
         } catch (err) {}
       }
       getMovieDetails();
@@ -210,6 +218,11 @@ function MovieDetail({
   useEffect(
     function () {
       document.title = `Movie | ${movie.Title}`;
+
+      return function () {
+        document.title = "usePopcorn";
+        console.log(`Clean up effect for movie ${movie.Title}`);
+      };
     },
     [movie.Title]
   );
