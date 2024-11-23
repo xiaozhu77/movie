@@ -25,35 +25,34 @@ import StarRating from "./StarRating";
 //   },
 // ];
 
-const tempWatchedData = [
-  {
-    imdbID: "tt1375666",
-    Title: "Inception",
-    Year: "2010",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
-    runtime: 148,
-    imdbRating: 8.8,
-    userRating: 10,
-  },
-  {
-    imdbID: "tt0088763",
-    Title: "Back to the Future",
-    Year: "1985",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
-    runtime: 116,
-    imdbRating: 8.5,
-    userRating: 9,
-  },
-];
+// const tempWatchedData = [
+//   {
+//     imdbID: "tt1375666",
+//     Title: "Inception",
+//     Year: "2010",
+//     Poster:
+//       "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+//     runtime: 148,
+//     imdbRating: 8.8,
+//     userRating: 10,
+//   },
+//   {
+//     imdbID: "tt0088763",
+//     Title: "Back to the Future",
+//     Year: "1985",
+//     Poster:
+//       "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+//     runtime: 116,
+//     imdbRating: 8.5,
+//     userRating: 9,
+//   },
+// ];
 
 const KEY = "1229dbd8";
 
 export default function App() {
   const [query, setQuery] = useState("test");
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
   const [isloading, setIsLoading] = useState(false);
   const [errors, setError] = useState("");
   const [selectMovie, setselectMoive] = useState();
@@ -66,8 +65,17 @@ export default function App() {
     setselectMoive(null);
   }
 
+  //usestate不仅可以传单个值，也可以传返回函数
+  const [watched, setWatched] = useState(function () {
+    const storedValue = localStorage.getItem("watched");
+    return JSON.parse(storedValue);
+  });
+
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]);
+
+    //暂存在本地内存上
+    // localStorage.setItem("watched", JSON.stringify([...watched, movies]));
   }
   function handleDelectWatched(id) {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
@@ -75,19 +83,23 @@ export default function App() {
 
   useEffect(
     function () {
-      function callback(e) {
-        if (e.code === "Escape") {
-          handleCloseMovie();
-          console.log("CLOSING");
-        }
-      }
-      document.addEventListener("keydown", callback);
-      return function () {
-        document.removeEventListener("keydown", callback);
-      };
+      localStorage.setItem("watched", JSON.stringify(watched));
     },
-    [handleCloseMovie]
+    [watched]
   );
+
+  useEffect(function () {
+    function callback(e) {
+      if (e.code === "Escape") {
+        handleCloseMovie();
+        console.log("CLOSING");
+      }
+    }
+    document.addEventListener("keydown", callback);
+    return function () {
+      document.removeEventListener("keydown", callback);
+    };
+  }, []);
 
   useEffect(
     function () {
@@ -240,6 +252,7 @@ function MovieDetail({
     function () {
       document.title = `Movie | ${movie.Title}`;
 
+      //在useEffect返回Cleanup函数,用以清除副作用
       return function () {
         document.title = "usePopcorn";
         console.log(`Clean up effect for movie ${movie.Title}`);

@@ -62,6 +62,7 @@ export default function App() {
   function handleselectedMovie(id) {
     setselectMoive((select) => (select === id ? null : id));
   }
+
   function handleCloseMovie() {
     setselectMoive(null);
   }
@@ -73,21 +74,18 @@ export default function App() {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
 
-  useEffect(
-    function () {
-      function callback(e) {
-        if (e.code === "Escape") {
-          handleCloseMovie();
-          console.log("CLOSING");
-        }
+  useEffect(function () {
+    function callback(e) {
+      if (e.code === "Escape") {
+        handleCloseMovie();
+        console.log("CLOSING");
       }
-      document.addEventListener("keydown", callback);
-      return function () {
-        document.removeEventListener("keydown", callback);
-      };
-    },
-    [handleCloseMovie]
-  );
+    }
+    document.addEventListener("keydown", callback);
+    return function () {
+      document.removeEventListener("keydown", callback);
+    };
+  }, []);
 
   useEffect(
     function () {
